@@ -14,12 +14,13 @@ import java.net.URL;
 
 public class GateView extends FixedPanel implements ActionListener, MouseListener {
     private final Gate gate;
-
     private final JCheckBox input1;
     private final JCheckBox input2;
+    private final JCheckBox input3;
     private final Image image;
     private final Switch switch1;
     private final Switch switch2;
+    private final Switch switch3;
     private final Light output;
     // Novos atributos necessários para esta versão da interface.
     private Color color;
@@ -34,8 +35,10 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
 
         input1 = new JCheckBox();
         input2 = new JCheckBox();
+        input3 = new JCheckBox();
         switch1 = new Switch();
         switch2 = new Switch();
+        switch3 = new Switch();
         output = new Light(255, 0, 0);
         JLabel img_credit = new JLabel("Images by Wikipedia");
 
@@ -45,7 +48,11 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
 
         // Como subclasse de FixedPanel, agora podemos definir a
         // posição e o tamanho de cada componente ao adicioná-la.
-        if (this.gate.getInputSize() > 1) {
+        if (this.gate.getInputSize() == 3) {
+            add(input1, 6, 7, 25, 25);
+            add(input2, 6, 27, 25, 25);
+            add(input3, 6, 47, 25, 25);
+        } else if (this.gate.getInputSize() == 2) {
             add(input1, 12, 10, 25, 25);
             add(input2, 12, 45, 25, 25);
         } else {
@@ -63,6 +70,7 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
 
         input1.addActionListener(this);
         input2.addActionListener(this);
+        input3.addActionListener(this);
         // Toda componente Swing tem uma lista de observadores
         // que reagem quando algum evento de mouse acontece.
         // Usamos o método addMouseListener para adicionar a
@@ -77,7 +85,26 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
 
     private void update() {
         output.connect(0, this.gate);
-        if (this.gate.getInputSize() == 2) {
+        if (this.gate.getInputSize() == 3) {
+            if (input1.isSelected()) {
+                switch1.turnOn();
+            } else {
+                switch1.turnOff();
+            }
+            if (input2.isSelected()) {
+                switch2.turnOn();
+            } else {
+                switch2.turnOff();
+            }
+            if (input3.isSelected()) {
+                switch3.turnOn();
+            } else {
+                switch3.turnOff();
+            }
+            this.gate.connect(0, switch1);
+            this.gate.connect(1, switch2);
+            this.gate.connect(2, switch3);
+        } else if (this.gate.getInputSize() == 2) {
             if (input1.isSelected()) {
                 switch1.turnOn();
             } else {
@@ -113,10 +140,13 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
         // Descobre em qual posição o clique ocorreu.
         int x = event.getX();
         int y = event.getY();
+        double radius = 25.0 / 2;
+        double center_x = 188.0 + radius / 2;
+        double center_y = 35.0 + radius / 2;
+        double distance_to_center = Math.sqrt(Math.pow((x - center_x), 2) + Math.pow((y - center_y), 2));
 
         // Se o clique foi dentro do quadrado colorido...
-        if (x >= 185 && x < 200 && y >= 32 && y < 47) {
-
+        if (distance_to_center < radius) {
             // ...então abrimos a janela seletora de cor...
             color = JColorChooser.showDialog(this, null, color);
             output.setColor(color);
